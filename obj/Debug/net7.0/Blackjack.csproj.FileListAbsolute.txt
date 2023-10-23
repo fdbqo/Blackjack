@@ -1,0 +1,15 @@
+/workspaces/Blackjack/obj/Debug/net7.0/Blackjack.csproj.AssemblyReference.cache
+/workspaces/Blackjack/obj/Debug/net7.0/Blackjack.GeneratedMSBuildEditorConfig.editorconfig
+/workspaces/Blackjack/obj/Debug/net7.0/Blackjack.AssemblyInfoInputs.cache
+/workspaces/Blackjack/obj/Debug/net7.0/Blackjack.AssemblyInfo.cs
+/workspaces/Blackjack/obj/Debug/net7.0/Blackjack.csproj.CoreCompileInputs.cache
+/workspaces/Blackjack/bin/Debug/net7.0/Blackjack
+/workspaces/Blackjack/bin/Debug/net7.0/Blackjack.deps.json
+/workspaces/Blackjack/bin/Debug/net7.0/Blackjack.runtimeconfig.json
+/workspaces/Blackjack/bin/Debug/net7.0/Blackjack.dll
+/workspaces/Blackjack/bin/Debug/net7.0/Blackjack.pdb
+/workspaces/Blackjack/obj/Debug/net7.0/Blackjack.dll
+/workspaces/Blackjack/obj/Debug/net7.0/refint/Blackjack.dll
+/workspaces/Blackjack/obj/Debug/net7.0/Blackjack.pdb
+/workspaces/Blackjack/obj/Debug/net7.0/Blackjack.genruntimeconfig.cache
+/workspaces/Blackjack/obj/Debug/net7.0/ref/Blackjack.dll
