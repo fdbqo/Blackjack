@@ -31,13 +31,27 @@ namespace CardGen
         public string suitGen { get; set; }
         public string faceGen { get; set; }
         public int value { get; set; }
+        public string fullCard { get; set; }
 
         public Card()
         {
             faceGen = GenerateFace();
             suitGen = GenerateSuit();
             value = CardValue();
+
+            fullCard = faceGen+suitGen;
         }
+
+        public Card(string face, string suit)
+        {
+            faceGen = face;
+            suitGen = suit;
+            value = CardValue();
+
+            fullCard = faceGen+suitGen;
+        }
+
+
 
 
         public static string GenerateSuit()
@@ -56,16 +70,34 @@ namespace CardGen
             int index = rand.Next(faces.Count);
             string resultFace = faces[index].ToString();
 
-            return resultFace;
+            Random random = new Random();
+            Face randomFace = faces[random.Next(faces.Count)];
+
+            return randomFace.ToString();
         
+        }
+
+        public List<Card> DeckGen()
+        {
+            List<Card> deck = new List<Card>();
+
+            foreach (Suit suit in Enum.GetValues(typeof(Suit)))
+            {
+                foreach (Face face in Enum.GetValues(typeof(Face)))
+                {
+                    Card card = new Card(face.ToString(), suit.ToString());
+                    deck.Add(card);
+                }
+            }
+
+            return deck;
         }
 
         public int CardValue()
         {
-            string Face = GenerateFace();
             int value = 0;
 
-            switch (Face)
+            switch (faceGen)
             {
                 case "Ace":
                     value = 11;
@@ -78,13 +110,9 @@ namespace CardGen
                     value = 10;
                     break;
 
-                // default:
-                //     int parsedValue;
-                //     if (int.TryParse(Face, out parsedValue))
-                //     {
-                //         value = parsedValue;
-                //     }
-                //     break;
+                default:
+                    value = (int)typeof(Face).GetField(faceGen.ToString()).GetValue(null);
+                    break;
             }
 
             return value;
