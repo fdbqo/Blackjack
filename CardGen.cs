@@ -33,11 +33,15 @@ namespace CardGen
         public int value { get; set; }
         public string fullCard { get; set; }
 
+        public static int playerTotal = 0;
+        public static int dealerTotal = 0;
+        public static int gameRound = 0;
+
         public Card()
         {
             faceGen = GenerateFace();
             suitGen = GenerateSuit();
-            value = CardValue();
+            value = CardValue(playerTotal);
 
             fullCard = faceGen+suitGen;
         }
@@ -46,7 +50,7 @@ namespace CardGen
         {
             faceGen = face;
             suitGen = suit;
-            value = CardValue();
+            value = CardValue(playerTotal);
 
             fullCard = faceGen+suitGen;
         }
@@ -93,37 +97,36 @@ namespace CardGen
             return deck;
         }
 
-        public int CardValue()
+        // public int CardValue()
+        // {
+        //     int value = 0;
+
+        //     switch (faceGen)
+        //     {
+        //         case "Ace":
+        //             value = 11;
+        //             break;
+
+        //         case "King":
+        //         case "Queen":
+        //         case "Jack":
+        //         case "Ten":
+        //             value = 10;
+        //             break;
+
+        //         default:
+        //             value = (int)typeof(Face).GetField(faceGen.ToString()).GetValue(null);
+        //             break;
+        //     }
+
+        //     return value;
+        // }
+
+        public int CardValue(int currentScore)
         {
             int value = 0;
 
             switch (faceGen)
-            {
-                case "Ace":
-                    value = 11;
-                    break;
-
-                case "King":
-                case "Queen":
-                case "Jack":
-                case "Ten":
-                    value = 10;
-                    break;
-
-                default:
-                    value = (int)typeof(Face).GetField(faceGen.ToString()).GetValue(null);
-                    break;
-            }
-
-            return value;
-        }
-
-        public int CardValue(int currentScore)
-        {
-            string face = GenerateFace();
-            int value = 0;
-
-            switch (face)
             {
                 case "Ace":
                     if (currentScore + 11 > 21)
@@ -144,7 +147,7 @@ namespace CardGen
                     break;
 
                 default:
-                    value = int.Parse(face);
+                    value = (int)typeof(Face).GetField(faceGen.ToString()).GetValue(null);
                     break;
             }
 
