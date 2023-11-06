@@ -97,6 +97,23 @@ namespace CardGen
             return deck;
         }
 
+        public List<Card> DeckGen(int numberOfDecks)
+        {
+            List<Card> deck = new List<Card>();
+
+            for (int i = 0; i < numberOfDecks; i++)
+            {
+                foreach (Suit suit in Enum.GetValues(typeof(Suit)))
+                {
+                    foreach (Face face in Enum.GetValues(typeof(Face)))
+                    {
+                        
+                        deck.Add(new Card(face.ToString(), suit.ToString()));
+                    }
+                }
+            }
+        
+
         // public int CardValue()
         // {
         //     int value = 0;
@@ -129,7 +146,7 @@ namespace CardGen
             switch (faceGen)
             {
                 case "Ace":
-                    if (currentScore + 11 > 21)
+                    if (currentScore + 11 >= 21)
                     {
                         value = 1;
                     }

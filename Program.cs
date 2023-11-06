@@ -21,10 +21,22 @@ namespace Blackjack
 
             Player player = new Player();
 
+            Card.playerTotal = 0;
+            Card.dealerTotal = 0;
+            Card.gameRound = 0;
+
 
             Card deckCards = new Card();
             List<Card> deck = deckCards.DeckGen();
             deck = initialize(deck);
+
+            foreach (Card c in deck)
+            {
+                Console.WriteLine(c.fullCard);
+            }
+            System.Console.WriteLine($"total cards in deck: {deck.Count}");
+
+
 
             Console.WriteLine("┌─────────────────────────────────────────────┐");
             Console.WriteLine("│ Welcome to Blackjack!                       │");
@@ -33,12 +45,7 @@ namespace Blackjack
             Console.Write("Input: ");
             player.Name = Console.ReadLine();
 
-            Console.WriteLine($"┌─────────────────────────────────────────────────────┐");
-            Console.WriteLine($"│ Your current Balance :  \u20AC{player.Wallet,-19:N2}        │");
-            Console.WriteLine($"| How much do you want to bet? :                      │");
-            Console.WriteLine($"└─────────────────────────────────────────────────────┘");
-            Console.Write("Input: ");
-            player.Bet = Convert.ToInt32(Console.ReadLine());
+            
 
             int menuInput = 0;
 
@@ -51,7 +58,7 @@ namespace Blackjack
                 Console.WriteLine("├─────────────────────────────────────────────┤");
                 Console.WriteLine("│                                             │");
                 Console.Write("│  (1) Play game                              │\n");
-                Console.Write("│  (2) View Wallet                            │\n");
+                Console.Write("│  (2) View Stats                             │\n");
                 Console.Write("│  (3) Exit                                   │\n");
                 Console.WriteLine("│                                             │");
                 Console.WriteLine("└─────────────────────────────────────────────┘");
@@ -61,10 +68,33 @@ namespace Blackjack
                 switch (menuInput)
                 {
                     case 1:
+
+                        Card.playerTotal = 0;
+                        Card.dealerTotal = 0;
+                        Card.gameRound = 0;
+                        dealerDone = false;
+
+                        deckCards = new Card();
+                        deck = deckCards.DeckGen();
+                        deck = initialize(deck);
+
+                        Console.WriteLine($"┌─────────────────────────────────────────────────────┐");
+                        Console.WriteLine($"│ Your current Balance :  \u20AC{player.Wallet,-19:N2}        │");
+                        Console.WriteLine($"| How much do you want to bet? :                      │");
+                        Console.WriteLine($"└─────────────────────────────────────────────────────┘");
+                        Console.Write("Input: ");
+                        player.Bet = Convert.ToDecimal(Console.ReadLine());
+                        while (player.Bet > player.Wallet)
+                        {
+                            Console.WriteLine("You don't have enough to bet this much.");
+                            Console.Write("Input: ");
+                            player.Bet = Convert.ToInt32(Console.ReadLine());
+                        }
                         gameStart(deck);
 
                         while (Card.playerTotal < 21 && Card.dealerTotal < 21 && dealerDone == false)
                         {
+                            
 
                             Console.WriteLine("┌─────────────────────────────────────────────┐");
                             Console.WriteLine("│ Hit or stand?                               │");
@@ -155,21 +185,28 @@ namespace Blackjack
                                 break;
                         }
 
+                        player.GamesPlayed++;
+                        player.totalBet += player.Bet;
                         decimal value = player.Bet;
+                        
 
                         switch (result)
                         {
                             case "win":
                                 value *= CasinoValues.multiplierBlackjackWin;
                                 player.addMoney(value);
+                                player.totalWon += value;
+                                player.Wins++;
                                 break;
                             case "lose":
-                                player.subtractMoney(value);
-                                value *= -1;
+                                player.subtractMoney(player.Bet);
+                                player.totalWon -= player.Bet;
+                                player.Losses++;
                                 break;
                             case "draw":
                                 value *= CasinoValues.multplierBlackjackDraw;
                                 player.addMoney(player.Bet * CasinoValues.multplierBlackjackDraw);
+                                player.Draws++;
                                 break;
                             default:
                                 break;
@@ -182,9 +219,7 @@ namespace Blackjack
                         break;
 
                     case 2:
-                        Console.WriteLine($"┌─────────────────────────────────────────────────────┐");
-                        Console.WriteLine($"│ Your current Balance : \u20AC{player.Wallet,-26:N}  │");
-                        Console.WriteLine($"└─────────────────────────────────────────────────────┘");
+                        player.Stats();
                         break;
                 }
             }
@@ -225,11 +260,7 @@ namespace Blackjack
 
             // Card newCard = new Card();
 
-            // foreach (Card c in deck)
-            // {
-            //     //Console.WriteLine(c.fullCard);
-            // }
-            // System.Console.WriteLine($"total cards in deck: {deck.Count}");
+            
 
 
             // System.Console.WriteLine(newCard.fullCard);
@@ -300,12 +331,16 @@ namespace Blackjack
             removeFromDeck(deck, dealer2);
             int dTotal = dealer1.value + dealer2.value;
 
+            deck.Shuffle();
+
             Card player1 = new Card();
             removeFromDeck(deck, player1);
             Card player2 = new Card();
             player2.CardValue(Card.playerTotal);
             removeFromDeck(deck, player2);
             int pTotal = player1.value + player2.value;
+
+            deck.Shuffle();
 
 
             Console.WriteLine("┌─────────────────────────────────────────────┐");
@@ -344,6 +379,7 @@ namespace Blackjack
 
         static void Hit(List<Card> deck)
         {
+            deck.Shuffle();
             Card hitCard = new Card();
             hitCard.CardValue(Card.playerTotal);
             Card.playerTotal += hitCard.value;
@@ -363,12 +399,14 @@ namespace Blackjack
 
         static void Stand(List<Card> deck)
         {
+            
             Console.WriteLine("┌─────────────────────────────────────────────┐");
             Console.WriteLine("│ You stood - Dealer's turn                   │");
             Console.WriteLine("└─────────────────────────────────────────────┘");
 
             while (Card.dealerTotal < 17)
             {
+                deck.Shuffle();
                 Card dealerCard = new Card();
                 dealerCard.CardValue(Card.dealerTotal);
                 Card.dealerTotal += dealerCard.value;
@@ -469,18 +507,21 @@ namespace Blackjack
 
     public static class ListExtensions
     {
-        private static Random rng = new Random();
-
         public static void Shuffle<T>(this IList<T> list)
         {
-            int n = list.Count;
-            while (n > 1)
+            using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
             {
-                n--;
-                int k = rng.Next(n + 1);
-                T value = list[k];
-                list[k] = list[n];
-                list[n] = value;
+                int n = list.Count;
+                while (n > 1)
+                {
+                    n--;
+                    byte[] box = new byte[4];
+                    rng.GetBytes(box);
+                    int k = Math.Abs(BitConverter.ToInt32(box, 0)) % n;
+                    T value = list[k];
+                    list[k] = list[n];
+                    list[n] = value;
+                }
             }
         }
     }
