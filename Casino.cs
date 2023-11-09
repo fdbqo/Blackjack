@@ -5,7 +5,7 @@ namespace Casino
     public class CasinoValues
     {
         public static decimal multiplierBlackjackWin = 1.5m;
-        public static decimal multplierBlackjackDraw = .05m;
+        public static decimal multplierBlackjackDraw = .1m;
 
     }
 

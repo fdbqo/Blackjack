@@ -17,6 +17,18 @@ namespace Blackjack
         public static bool dealerDone = false;
         static void Main(string[] args)
         {
+
+            // Some info --------------
+            // - you can currently always deposit, just in case the user loses,
+            //   although there is a system to limit deposit (cannot deposit 20% above wallet,
+            //   unless wallet is below 1 which allows deposits of up to 500)
+            // - dealer is not "smart", won't hit above 17 even if player has above, unless on a soft 17 (ace + etc)
+            // - game uses 6 decks like real life casinos
+            // - game uses 1.5x multiplier for blackjack win, and 0.1x multiplier for draw in the unlikely case
+            // - 1k starting balance, can be changed easily
+            // - used cards are removed from the deck, so dupes cannot be generated if used up
+
+
             Console.OutputEncoding = System.Text.Encoding.UTF8;
 
             Player player = new Player();
@@ -30,28 +42,29 @@ namespace Blackjack
             List<Card> deck = deckCards.DeckGen(6);
             deck = initialize(deck);
 
-            foreach (Card c in deck)
+            // foreach (Card c in deck)
+            // {
+            //     Console.WriteLine(c.fullCard);
+            // }
+            // System.Console.WriteLine($"total cards in deck: {deck.Count}");
+
+            // test for checking and counting cards 
+
+
+            while (player.Name == null || player.Name == "")
             {
-                Console.WriteLine(c.fullCard);
+                Console.WriteLine("┌─────────────────────────────────────────────┐");
+                Console.WriteLine("│ Welcome to Blackjack!                       │");
+                Console.WriteLine("│ Enter your name!                            │");
+                Console.WriteLine("└─────────────────────────────────────────────┘");
+                Console.Write("Input: ");
+                player.Name = Console.ReadLine();
             }
-            System.Console.WriteLine($"total cards in deck: {deck.Count}");
-
-
-
-            Console.WriteLine("┌─────────────────────────────────────────────┐");
-            Console.WriteLine("│ Welcome to Blackjack!                       │");
-            Console.WriteLine("│ Enter your name!                            │");
-            Console.WriteLine("└─────────────────────────────────────────────┘");
-            Console.Write("Input: ");
-            player.Name = Console.ReadLine();
-
-            
-
             int menuInput = 0;
 
 
 
-            while (menuInput != 3)
+            while (menuInput != 4)
             {
                 Console.WriteLine("┌─────────────────────────────────────────────┐");
                 Console.WriteLine("│ Menu                                        │");
@@ -59,11 +72,20 @@ namespace Blackjack
                 Console.WriteLine("│                                             │");
                 Console.Write("│  (1) Play game                              │\n");
                 Console.Write("│  (2) View Stats                             │\n");
-                Console.Write("│  (3) Exit                                   │\n");
+                Console.Write("│  (3) Deposit / Withdraw                     │\n");
+                Console.Write("│  (4) Exit                                   │\n");
                 Console.WriteLine("│                                             │");
                 Console.WriteLine("└─────────────────────────────────────────────┘");
-                Console.Write("Input: ");
-                menuInput = int.Parse(Console.ReadLine());
+                try 
+                {
+                     Console.Write("Input: ");
+                    menuInput = int.Parse(Console.ReadLine());
+                }
+                catch (System.Exception)
+                {
+                    Console.WriteLine("Invalid input");
+                }
+                
 
                 switch (menuInput)
                 {
@@ -72,7 +94,6 @@ namespace Blackjack
                         Card.playerTotal = 0;
                         Card.dealerTotal = 0;
                         Card.gameRound = 0;
-                        dealerDone = false;
 
                         deckCards = new Card();
                         deck = deckCards.DeckGen();
@@ -82,23 +103,30 @@ namespace Blackjack
                         Console.WriteLine($"│ Your current Balance :  \u20AC{player.Wallet,-19:N2}        │");
                         Console.WriteLine($"| How much do you want to bet? :                      │");
                         Console.WriteLine($"└─────────────────────────────────────────────────────┘");
-                        try
+                        bool validInput = false;
+
+                        while (!validInput)
                         {
-                            Console.Write("Input: ");
-                            player.Bet = Convert.ToDecimal(Console.ReadLine());
-                            while (player.Bet > player.Wallet)
+                            try 
                             {
-                                Console.WriteLine("You don't have enough to bet this much.");
+                                
                                 Console.Write("Input: ");
-                                player.Bet = Convert.ToInt32(Console.ReadLine());
+                                player.Bet = Convert.ToDecimal(Console.ReadLine());
+                                while (player.Bet > player.Wallet)
+                                {
+                                    Console.WriteLine("You don't have enough to bet this much.");
+                                    Console.Write("Input: ");
+                                    player.Bet = Convert.ToInt32(Console.ReadLine());
+                                }
+                                gameStart(deck);
+                                validInput = true;
                             }
-                            gameStart(deck);
+                            catch (System.Exception)
+                            {
+                                Console.WriteLine("Invalid input");
+                            }
                         }
-                        catch (System.Exception)
-                        {
-                            Console.WriteLine("Invalid input");
-                            throw;
-                        }
+                        
                         
 
                         while (Card.playerTotal < 21 && Card.dealerTotal < 21 && dealerDone == false)
@@ -192,7 +220,7 @@ namespace Blackjack
                             case "lose":
                                 player.subtractMoney(player.Bet);
                                 value = player.Bet * -1; 
-                                player.totalWon += player.Bet;
+                                player.totalWon += value;
                                 player.Losses++;
                                 break;
                             case "draw":
@@ -212,6 +240,75 @@ namespace Blackjack
 
                     case 2:
                         player.Stats();
+                        break;
+                    
+                    case 3:
+                        Console.WriteLine("┌─────────────────────────────────────────────┐");
+                        Console.WriteLine("│ Deposit / Withdraw                          │");
+                        Console.WriteLine("├─────────────────────────────────────────────┤");
+                        Console.WriteLine("│                                             │");
+                        Console.Write("│  (1) Deposit                                │\n");
+                        Console.Write("│  (2) Withdraw                               │\n");
+                        Console.WriteLine("│                                             │");
+                        Console.WriteLine("└─────────────────────────────────────────────┘");
+                        Console.Write("Input: ");
+                        
+                        try
+                        {
+                            int input2 = int.Parse(Console.ReadLine());
+                            switch (input2)
+                            {
+                                case 1:
+                                    int check = 1;
+                    
+                                    while (check == 1)
+                                    {
+
+                                        Console.WriteLine("How much do you want to deposit?");
+                                        Console.Write("Input: ");
+                                        decimal deposit = decimal.Parse(Console.ReadLine());
+
+                                        if (player.Wallet != 0 && deposit > (player.Wallet + (player.Wallet * 0.2m)))
+                                        {
+                                            Console.WriteLine("You can't deposit that much (20% above wallet)");
+                                        }
+                                        else if (player.Wallet < 1 && deposit > 500 )
+                                        {
+                                            Console.WriteLine("You can't deposit more than 500");
+                                        }
+                                        else
+                                        {
+                                            player.addMoney(deposit);
+                                            check = 0;
+                                        }
+                                    }
+                                    
+                                    break;
+                                case 2:
+                                    Console.WriteLine("How much do you want to withdraw?");
+                                    Console.Write("Input: ");
+                                    decimal withdraw = decimal.Parse(Console.ReadLine());
+                                    if (withdraw > player.Wallet)
+                                    {
+                                        Console.WriteLine("You can't withdraw more money than you have.");
+                                    }
+                                    else
+                                    {
+                                        player.subtractMoney(withdraw);
+                                    }
+                                    break;
+                                default:
+                                    Console.WriteLine("Invalid input");
+                                    break;
+                            }
+                        }
+                        catch (System.Exception)
+                        {
+                            Console.WriteLine("Invalid input");
+                        }
+                        break;
+                    case 4:
+                        Console.WriteLine("Goodbye!");
                         break;
                 }
             }
@@ -336,14 +433,18 @@ namespace Blackjack
             deck.Shuffle();
             int pTotal = player1.value + player2.value;
 
-            string output = dealer1.faceGen + " of " + dealer1.suitGen;
+            string output = $"{dealer1.faceGen} of {dealer1.suitGen}";
+            string output1 = $"{dealer2.faceGen} of {dealer2.suitGen}";
+
+            string output2 = $"{player1.faceGen} of {player1.suitGen}";
+            string output3 = $"{player2.faceGen} of {player2.suitGen}";
 
             Console.WriteLine("┌─────────────────────────────────────────────┐");
             Console.WriteLine("│ Dealer's Cards                              │");
             Console.WriteLine("├─────────────────────────────────────────────┤");
-            Console.WriteLine($"│ {output,-20} │ Value: {dealer1.value,-1}            │");
+            Console.WriteLine($"│ {output,-20} │ Value: {dealer1.value,-2}            │");
             Console.WriteLine("├─────────────────────────────────────────────┤");
-            Console.WriteLine($"│ {dealer2.faceGen,-7} {"of"} {dealer2.suitGen,-7} │ Value: {dealer2.value,-1}            │");
+            Console.WriteLine($"│ {output1,-20} │ Value: {dealer2.value,-2}            │");
             Console.WriteLine("├─────────────────────────────────────────────┤");
             Console.WriteLine($"│ Total: {dTotal,-36} │");
             Console.WriteLine("└─────────────────────────────────────────────┘");
@@ -351,9 +452,9 @@ namespace Blackjack
             Console.WriteLine("┌─────────────────────────────────────────────┐");
             Console.WriteLine("│ Player's Cards                              │");
             Console.WriteLine("├─────────────────────────────────────────────┤");
-            Console.WriteLine($"│ {player1.faceGen,-8} of {player1.suitGen,-8} │ Value: {player1.value,-2}            │");
+            Console.WriteLine($"│ {output2,-20} │ Value: {player1.value,-2}            │");
             Console.WriteLine("├─────────────────────────────────────────────┤");
-            Console.WriteLine($"│ {player2.faceGen,-8} of {player2.suitGen,-8} │ Value: {player2.value,-2}            │");
+            Console.WriteLine($"│ {output3,-20} │ Value: {player2.value,-2}            │");
             Console.WriteLine("├─────────────────────────────────────────────┤");
             Console.WriteLine($"│ Total: {pTotal,-36} │");
             Console.WriteLine("└─────────────────────────────────────────────┘");
@@ -379,10 +480,12 @@ namespace Blackjack
             hitCard.CardValue(Card.playerTotal);
             Card.playerTotal += hitCard.value;
 
+            string output = $"{hitCard.faceGen} of {hitCard.suitGen}";
+
             Console.WriteLine("┌─────────────────────────────────────────────┐");
             Console.WriteLine("│ Hit!                                        │");
             Console.WriteLine("├─────────────────────────────────────────────┤");
-            Console.WriteLine($"│ {hitCard.faceGen,-8} of {hitCard.suitGen,-8} │ Value: {hitCard.value,-2}            │");
+            Console.WriteLine($"│ {output,-20} │ Value: {hitCard.value,-2}            │");
             Console.WriteLine("├─────────────────────────────────────────────┤");
             Console.WriteLine($"│ New Total: {Card.playerTotal,-32} │");
             Console.WriteLine("└─────────────────────────────────────────────┘");
@@ -399,17 +502,21 @@ namespace Blackjack
             Console.WriteLine("│ You stood - Dealer's turn                   │");
             Console.WriteLine("└─────────────────────────────────────────────┘");
 
-            while (Card.dealerTotal < 17)
+            
+            Card dealerCard = null;
+            while (Card.dealerTotal < 17 || (dealerCard != null && Card.dealerTotal == 17 && dealerCard.faceGen == "Ace" && Card.playerTotal > 17))        
             {
                 deck.Shuffle();
-                Card dealerCard = new Card();
+                dealerCard = new Card();
                 dealerCard.CardValue(Card.dealerTotal);
                 Card.dealerTotal += dealerCard.value;
+
+                string output = $"{dealerCard.faceGen} of {dealerCard.suitGen}";
 
                 Console.WriteLine("┌─────────────────────────────────────────────┐");
                 Console.WriteLine("│ Hit!                                        │");
                 Console.WriteLine("├─────────────────────────────────────────────┤");
-                Console.WriteLine($"│ {dealerCard.faceGen,-8} of {dealerCard.suitGen,-8} │ Value: {dealerCard.value,-2}            │");
+                Console.WriteLine($"│ {output,-20} │ Value: {dealerCard.value,-2}            │");
                 Console.WriteLine("├─────────────────────────────────────────────┤");
                 Console.WriteLine($"│ New Total: {Card.dealerTotal,-32} │");
                 Console.WriteLine("└─────────────────────────────────────────────┘");
