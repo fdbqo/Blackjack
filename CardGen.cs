@@ -107,11 +107,14 @@ namespace CardGen
                 {
                     foreach (Face face in Enum.GetValues(typeof(Face)))
                     {
-                        
-                        deck.Add(new Card(face.ToString(), suit.ToString()));
+                        Card card = new Card(face.ToString(), suit.ToString());
+                        deck.Add(card);
                     }
                 }
             }
+
+            return deck;
+        }
         
 
         // public int CardValue()

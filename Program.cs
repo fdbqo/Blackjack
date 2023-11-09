@@ -27,7 +27,7 @@ namespace Blackjack
 
 
             Card deckCards = new Card();
-            List<Card> deck = deckCards.DeckGen();
+            List<Card> deck = deckCards.DeckGen(6);
             deck = initialize(deck);
 
             foreach (Card c in deck)
@@ -82,15 +82,24 @@ namespace Blackjack
                         Console.WriteLine($"│ Your current Balance :  \u20AC{player.Wallet,-19:N2}        │");
                         Console.WriteLine($"| How much do you want to bet? :                      │");
                         Console.WriteLine($"└─────────────────────────────────────────────────────┘");
-                        Console.Write("Input: ");
-                        player.Bet = Convert.ToDecimal(Console.ReadLine());
-                        while (player.Bet > player.Wallet)
+                        try
                         {
-                            Console.WriteLine("You don't have enough to bet this much.");
                             Console.Write("Input: ");
-                            player.Bet = Convert.ToInt32(Console.ReadLine());
+                            player.Bet = Convert.ToDecimal(Console.ReadLine());
+                            while (player.Bet > player.Wallet)
+                            {
+                                Console.WriteLine("You don't have enough to bet this much.");
+                                Console.Write("Input: ");
+                                player.Bet = Convert.ToInt32(Console.ReadLine());
+                            }
+                            gameStart(deck);
                         }
-                        gameStart(deck);
+                        catch (System.Exception)
+                        {
+                            Console.WriteLine("Invalid input");
+                            throw;
+                        }
+                        
 
                         while (Card.playerTotal < 21 && Card.dealerTotal < 21 && dealerDone == false)
                         {
@@ -131,58 +140,40 @@ namespace Blackjack
 
                         string result = "";
 
-
-                        switch (Card.playerTotal)
+                        if (Card.playerTotal > 21)
                         {
-                            case var _ when Card.playerTotal == Card.dealerTotal:
-                                Console.WriteLine($"Push! Draw");
-                                result = "draw";
-                                break;
-                            case var _ when Card.playerTotal == 21 && Card.gameRound == 1:
-                                Console.WriteLine($"Natural Blackjack! You win!");
-                                result = "win";
-                                break;
-                            case var _ when Card.playerTotal < 21 && Card.playerTotal > Card.dealerTotal:
-                                Console.WriteLine($"Player wins on score!");
-                                result = "win";
-                                break;
-                            case 21:
-                                Console.WriteLine($"Blackjack! You win!");
-                                result = "win";
-                                break;
-                            case > 21:
-                                Console.WriteLine($"Bust! You lose!");
-                                result = "lose";
-                                break;
-
-                            default:
-                                break;
+                            Console.WriteLine("Bust! You lose!");
+                            result = "lose";
                         }
-
-                        switch (Card.dealerTotal)
+                        else if (Card.dealerTotal > 21)
                         {
-                            case var _ when Card.playerTotal == Card.dealerTotal:
-                                Console.WriteLine($"Push! Draw");
-                                result = "draw";
-                                break;
-                            case var _ when Card.dealerTotal == 21 && Card.gameRound == 1:
-                                Console.WriteLine($"Natural Blackjack! Dealer win!");
-                                result = "loss";
-                                break;
-                            case var _ when Card.dealerTotal < 21 && Card.dealerTotal > Card.playerTotal:
-                                Console.WriteLine($"Dealer wins on score!");
-                                result = "loss";
-                                break;
-                            case 21:
-                                Console.WriteLine($"Blackjack! Dealer win!");
-                                result = "loss";
-                                break;
-                            case > 21:
-                                Console.WriteLine($"Bust! Dealer loses!");
-                                result = "win";
-                                break;
-                            default:
-                                break;
+                            Console.WriteLine("Bust! Dealer loses!");
+                            result = "win";
+                        }
+                        else if (Card.playerTotal == 21)
+                        {
+                            Console.WriteLine(Card.gameRound == 1 ? "Natural Blackjack! You win!" : "Blackjack! You win!");
+                            result = "win";
+                        }
+                        else if (Card.dealerTotal == 21)
+                        {
+                            Console.WriteLine(Card.gameRound == 1 ? "Natural Blackjack! Dealer win!" : "Blackjack! Dealer win!");
+                            result = "lose";
+                        }
+                        else if (Card.playerTotal > Card.dealerTotal)
+                        {
+                            Console.WriteLine("Player wins on score!");
+                            result = "win";
+                        }
+                        else if (Card.playerTotal < Card.dealerTotal)
+                        {
+                            Console.WriteLine("Dealer wins on score!");
+                            result = "lose";
+                        }
+                        else
+                        {
+                            Console.WriteLine("Push! Draw");
+                            result = "draw";
                         }
 
                         player.GamesPlayed++;
@@ -200,7 +191,8 @@ namespace Blackjack
                                 break;
                             case "lose":
                                 player.subtractMoney(player.Bet);
-                                player.totalWon -= player.Bet;
+                                value = player.Bet * -1; 
+                                player.totalWon += player.Bet;
                                 player.Losses++;
                                 break;
                             case "draw":
@@ -313,7 +305,7 @@ namespace Blackjack
         static List<Card> initialize(List<Card> deck)
         {
             Card deckCards = new Card();
-            List<Card> Deck = deckCards.DeckGen();
+            List<Card> Deck = deckCards.DeckGen(6);
             Deck.Shuffle();
 
             return Deck;
@@ -323,32 +315,35 @@ namespace Blackjack
         {
             Card dealer1 = new Card();
             removeFromDeck(deck, dealer1);
+            deck.Shuffle();
             Card dealer2 = new Card();
             if (dealer1.value + dealer2.value > 21)
             {
                 dealer2 = new Card();
             }
             removeFromDeck(deck, dealer2);
+            deck.Shuffle();
             int dTotal = dealer1.value + dealer2.value;
 
-            deck.Shuffle();
+            
 
             Card player1 = new Card();
             removeFromDeck(deck, player1);
+            deck.Shuffle();
             Card player2 = new Card();
             player2.CardValue(Card.playerTotal);
             removeFromDeck(deck, player2);
+            deck.Shuffle();
             int pTotal = player1.value + player2.value;
 
-            deck.Shuffle();
-
+            string output = dealer1.faceGen + " of " + dealer1.suitGen;
 
             Console.WriteLine("┌─────────────────────────────────────────────┐");
             Console.WriteLine("│ Dealer's Cards                              │");
             Console.WriteLine("├─────────────────────────────────────────────┤");
-            Console.WriteLine($"│ {dealer1.faceGen,-8} of {dealer1.suitGen,-8} │ Value: {dealer1.value,-2}            │");
+            Console.WriteLine($"│ {output,-20} │ Value: {dealer1.value,-1}            │");
             Console.WriteLine("├─────────────────────────────────────────────┤");
-            Console.WriteLine($"│ {dealer2.faceGen,-8} of {dealer2.suitGen,-8} │ Value: {dealer2.value,-2}            │");
+            Console.WriteLine($"│ {dealer2.faceGen,-7} {"of"} {dealer2.suitGen,-7} │ Value: {dealer2.value,-1}            │");
             Console.WriteLine("├─────────────────────────────────────────────┤");
             Console.WriteLine($"│ Total: {dTotal,-36} │");
             Console.WriteLine("└─────────────────────────────────────────────┘");
